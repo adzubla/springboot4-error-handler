@@ -90,7 +90,7 @@ class ValidationExceptionHandlerIT {
                 .andExpect(jsonPath("$.address.street").value("Rua A, 1"));
     }
 
-    // --- negative ---
+    // --- negative: single field violations ---
 
     @Test
     void blankName_returnsUnprocessableWithViolation() throws Exception {
@@ -106,23 +106,6 @@ class ValidationExceptionHandlerIT {
                 .andExpect(jsonPath("$.title").value("Validation failed"))
                 .andExpect(jsonPath("$.violations").isArray())
                 .andExpect(jsonPath("$.violations[?(@.path=='$.name')]").exists())
-                .andExpect(jsonPath("$.traceId").isString());
-    }
-
-    @Test
-    void negativePriceAndStock_returnsAllViolations() throws Exception {
-        mvc.perform(post("/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"name":"Laptop","price":-1.00,"stock":-5,"category":"ELECTRONICS"}
-                                """))
-                .andDo(print())
-                .andExpect(status().isUnprocessableContent())
-                .andExpect(header().exists("X-Trace-Id"))
-                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
-                .andExpect(jsonPath("$.title").value("Validation failed"))
-                .andExpect(jsonPath("$.violations[?(@.path=='$.price')]").exists())
-                .andExpect(jsonPath("$.violations[?(@.path=='$.stock')]").exists())
                 .andExpect(jsonPath("$.traceId").isString());
     }
 
@@ -174,6 +157,41 @@ class ValidationExceptionHandlerIT {
     }
 
     @Test
+    void bothNestedAddressFields_invalid_returnsBothViolations() throws Exception {
+        mvc.perform(post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Laptop","price":1.00,"stock":0,"address":{"street":"","city":""}}
+                                """))
+                .andDo(print())
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(header().exists("X-Trace-Id"))
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.violations[?(@.path=='$.address.street')]").exists())
+                .andExpect(jsonPath("$.violations[?(@.path=='$.address.city')]").exists())
+                .andExpect(jsonPath("$.traceId").isString());
+    }
+
+    // --- negative: multiple violations ---
+
+    @Test
+    void negativePriceAndStock_returnsAllViolations() throws Exception {
+        mvc.perform(post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Laptop","price":-1.00,"stock":-5,"category":"ELECTRONICS"}
+                                """))
+                .andDo(print())
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(header().exists("X-Trace-Id"))
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.violations[?(@.path=='$.price')]").exists())
+                .andExpect(jsonPath("$.violations[?(@.path=='$.stock')]").exists())
+                .andExpect(jsonPath("$.traceId").isString());
+    }
+
+    @Test
     void multipleViolations_returnsAllInList() throws Exception {
         mvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -189,21 +207,7 @@ class ValidationExceptionHandlerIT {
                 .andExpect(jsonPath("$.traceId").isString());
     }
 
-    @Test
-    void bothNestedAddressFields_invalid_returnsBothViolations() throws Exception {
-        mvc.perform(post("/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"name":"Laptop","price":1.00,"stock":0,"address":{"street":"","city":""}}
-                                """))
-                .andDo(print())
-                .andExpect(status().isUnprocessableContent())
-                .andExpect(header().exists("X-Trace-Id"))
-                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
-                .andExpect(jsonPath("$.violations[?(@.path=='$.address.street')]").exists())
-                .andExpect(jsonPath("$.violations[?(@.path=='$.address.city')]").exists())
-                .andExpect(jsonPath("$.traceId").isString());
-    }
+    // --- negative: response shape ---
 
     @Test
     void invalidValue_isPresentForRejectedField() throws Exception {
@@ -236,6 +240,8 @@ class ValidationExceptionHandlerIT {
                         hasItem("null")))
                 .andExpect(jsonPath("$.traceId").isString());
     }
+
+    // --- i18n ---
 
     @Test
     void blankName_withPtBrLocale_returnsPortugueseMessages() throws Exception {

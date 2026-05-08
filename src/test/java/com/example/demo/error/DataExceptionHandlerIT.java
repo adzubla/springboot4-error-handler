@@ -30,8 +30,10 @@ class DataExceptionHandlerIT {
     @Autowired
     MockMvc mvc;
 
+    // --- 404 not found ---
+
     @Test
-    void getUnknownId_returnsNotFound() throws Exception {
+    void entityNotFound_returnsNotFound() throws Exception {
         mvc.perform(post("/test/exceptions/not-found"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
@@ -54,8 +56,10 @@ class DataExceptionHandlerIT {
                 .andExpect(jsonPath("$.traceId").isString());
     }
 
+    // --- 409 conflict ---
+
     @Test
-    void duplicateName_returnsConflict() throws Exception {
+    void jpaUniqueConstraintViolation_returnsConflict() throws Exception {
         mvc.perform(post("/test/exceptions/unique-violation"))
                 .andDo(print())
                 .andExpect(status().isConflict())
@@ -67,7 +71,7 @@ class DataExceptionHandlerIT {
     }
 
     @Test
-    void duplicateKeyException_returnsConflict() throws Exception {
+    void jdbcDuplicateKey_returnsConflict() throws Exception {
         mvc.perform(post("/test/exceptions/duplicate-key"))
                 .andDo(print())
                 .andExpect(status().isConflict())
@@ -79,7 +83,7 @@ class DataExceptionHandlerIT {
     }
 
     @Test
-    void fkViolation_returnsConflict() throws Exception {
+    void foreignKeyViolation_returnsConflict() throws Exception {
         mvc.perform(post("/test/exceptions/fk-violation"))
                 .andDo(print())
                 .andExpect(status().isConflict())
@@ -102,8 +106,10 @@ class DataExceptionHandlerIT {
                 .andExpect(jsonPath("$.traceId").isString());
     }
 
+    // --- i18n ---
+
     @Test
-    void getUnknownId_withPtBrLocale_returnsPortugueseMessages() throws Exception {
+    void entityNotFound_withPtBrLocale_returnsPortugueseMessages() throws Exception {
         mvc.perform(post("/test/exceptions/not-found")
                         .header("Accept-Language", "pt-BR"))
                 .andDo(print())

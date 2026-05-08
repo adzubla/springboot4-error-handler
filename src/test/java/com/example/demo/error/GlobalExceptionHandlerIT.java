@@ -29,12 +29,12 @@ class GlobalExceptionHandlerIT {
     MockMvc mvc;
 
     @Test
-    void methodNotAllowed_returnsMethodNotAllowed() throws Exception {
-        mvc.perform(get("/products"))
+    void missingRequestParam_returnsBadRequest() throws Exception {
+        mvc.perform(post("/test/global/need-param"))
                 .andDo(print())
-                .andExpect(status().isMethodNotAllowed())
+                .andExpect(status().isBadRequest())
                 .andExpect(header().exists("X-Trace-Id"))
-                .andExpect(jsonPath("$.code").value("METHOD_NOT_ALLOWED"))
+                .andExpect(jsonPath("$.code").value("MISSING_REQUEST_PARAMETER"))
                 .andExpect(jsonPath("$.traceId").isString());
     }
 
@@ -49,6 +49,16 @@ class GlobalExceptionHandlerIT {
     }
 
     @Test
+    void methodNotAllowed_returnsMethodNotAllowed() throws Exception {
+        mvc.perform(get("/products"))
+                .andDo(print())
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(header().exists("X-Trace-Id"))
+                .andExpect(jsonPath("$.code").value("METHOD_NOT_ALLOWED"))
+                .andExpect(jsonPath("$.traceId").isString());
+    }
+
+    @Test
     void unsupportedMediaType_returnsUnsupportedMediaType() throws Exception {
         mvc.perform(post("/products")
                         .contentType(MediaType.TEXT_PLAIN)
@@ -57,16 +67,6 @@ class GlobalExceptionHandlerIT {
                 .andExpect(status().isUnsupportedMediaType())
                 .andExpect(header().exists("X-Trace-Id"))
                 .andExpect(jsonPath("$.code").value("UNSUPPORTED_MEDIA_TYPE"))
-                .andExpect(jsonPath("$.traceId").isString());
-    }
-
-    @Test
-    void missingRequestParam_returnsBadRequest() throws Exception {
-        mvc.perform(post("/test/global/need-param"))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(header().exists("X-Trace-Id"))
-                .andExpect(jsonPath("$.code").value("MISSING_REQUEST_PARAMETER"))
                 .andExpect(jsonPath("$.traceId").isString());
     }
 
