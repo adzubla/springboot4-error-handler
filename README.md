@@ -1,4 +1,4 @@
-# spring-error-handler
+# Reusable Spring Boot 4 Error Handler
 
 Reusable Spring Boot 4 auto-configuration that turns exceptions into structured
 [RFC 9457 Problem Details](https://www.rfc-editor.org/rfc/rfc9457) responses and
@@ -239,6 +239,74 @@ spring.servlet.multipart.max-request-size=50MB
 
 When either limit is exceeded Spring throws `MaxUploadSizeExceededException`, which
 `GlobalExceptionHandler` maps to 413 `PAYLOAD_TOO_LARGE`.
+
+## Internationalisation (i18n)
+
+Every `title` and `detail` field in the error body is resolved through Spring's `MessageSource`,
+with the locale read from `LocaleContextHolder` at exception-handling time. Translating error
+messages to a new language requires only a properties file — no code changes.
+
+### Bundled locales
+
+| File                        | Locale              |
+|-----------------------------|---------------------|
+| `messages.properties`       | English (fallback)  |
+| `messages_pt_BR.properties` | Portuguese — Brazil |
+
+### Adding a locale
+
+Create `messages_<language>[_<COUNTRY>].properties` alongside the existing files and translate
+every key. Spring resolves the closest-matching bundle for the request locale automatically.
+
+```properties
+# src/main/resources/messages_es.properties
+error.validation-failed.title=Validación fallida
+error.validation-failed.detail=Uno o más campos no pasaron la validación
+error.resource-not-found.title=Recurso no encontrado
+error.resource-not-found.detail=El recurso solicitado no fue encontrado.
+# … remaining keys …
+```
+
+If you package this library as a JAR and your application defines its own `messages.properties`,
+list both basenames so Spring merges them:
+
+```properties
+spring.messages.basename=messages,classpath:com/example/demo/error/messages
+spring.messages.encoding=UTF-8
+```
+
+### Locale resolution
+
+By default, Spring MVC's `AcceptHeaderLocaleResolver` maps the `Accept-Language` request header
+to a `java.util.Locale`. When the header is absent or no bundle matches, Spring falls back to the
+JVM default locale and then to the root `messages.properties`.
+
+To resolve locale from a cookie or session instead, declare a `LocaleResolver` bean:
+
+```java
+
+@Bean
+LocaleResolver localeResolver() {
+    var resolver = new CookieLocaleResolver("lang");
+    resolver.setDefaultLocale(Locale.ENGLISH);
+    return resolver;
+}
+```
+
+### Validation constraint messages
+
+The `violations[].message` field inside `VALIDATION_FAILED` responses comes from **Bean
+Validation**, not from the `MessageSource` above. To localise constraint messages, add a
+`ValidationMessages_<locale>.properties` file to your classpath:
+
+```properties
+# src/main/resources/ValidationMessages_pt_BR.properties
+jakarta.validation.constraints.NotBlank.message=não deve estar em branco
+jakarta.validation.constraints.Size.message=o tamanho deve estar entre {min} e {max}
+```
+
+Bean Validation resolves its bundle against the JVM default locale. To drive it from the
+per-request locale, supply a locale-aware `MessageInterpolator` in your validator configuration.
 
 ## Full dependency block for tracing support
 
