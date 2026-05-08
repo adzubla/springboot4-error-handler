@@ -105,11 +105,6 @@ public class ValidationExceptionHandler {
         problem.setTitle(messageSource.getMessage("error.validation-failed.title", null, locale));
         problem.setProperty("code", ErrorCode.VALIDATION_FAILED.name());
         problem.setProperty("violations", violations);
-        System.out.println("------------------------------------------------------------------------");
-        System.out.println(problem.getStatus() + " " + problem.getTitle());
-        System.out.println(problem.getDetail());
-        System.out.println(violations);
-        System.out.println("------------------------------------------------------------------------");
         return ResponseEntity.unprocessableContent().body(problem);
     }
 }

@@ -26,6 +26,9 @@ class ProductService {
         product.setAddress(request.address());
         product.setWeight(request.weight());
         product.setActive(request.active());
+        product.setReleaseDate(request.releaseDate());
+        product.setExpiresAt(request.expiresAt());
+        product.setScheduledAt(request.scheduledAt());
         return toResponse(repository.save(product));
     }
 
@@ -38,7 +41,8 @@ class ProductService {
     private ProductResponse toResponse(Product p) {
         return new ProductResponse(
                 p.getId(), p.getName(), p.getPrice(), p.getStock(),
-                p.getCategory(), p.getTags(), p.getAttributes(), p.getAddress(), p.getWeight(), p.getActive()
+                p.getCategory(), p.getTags(), p.getAttributes(), p.getAddress(), p.getWeight(), p.getActive(),
+                p.getReleaseDate(), p.getExpiresAt(), p.getScheduledAt()
         );
     }
 }

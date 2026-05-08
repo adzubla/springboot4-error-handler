@@ -233,10 +233,6 @@ public class JsonExceptionHandler {
     }
 
     private static ResponseEntity<ProblemDetail> badRequest(ProblemDetail problem) {
-        System.out.println("------------------------------------------------------------------------");
-        System.out.println(problem.getStatus() + " " + problem.getTitle());
-        System.out.println(problem.getDetail());
-        System.out.println("------------------------------------------------------------------------");
         return ResponseEntity.badRequest().body(problem);
     }
 }

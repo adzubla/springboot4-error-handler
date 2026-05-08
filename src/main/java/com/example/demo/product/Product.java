@@ -3,6 +3,9 @@ package com.example.demo.product;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +47,12 @@ public class Product {
     private Long weight;
 
     private Boolean active;
+
+    private LocalDate releaseDate;
+
+    private LocalDateTime expiresAt;
+
+    private Instant scheduledAt;
 
     public Product() {
     }
@@ -122,5 +131,29 @@ public class Product {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public LocalDate getReleaseDate() {
+        return releaseDate;
+    }
+
+    public void setReleaseDate(LocalDate releaseDate) {
+        this.releaseDate = releaseDate;
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public Instant getScheduledAt() {
+        return scheduledAt;
+    }
+
+    public void setScheduledAt(Instant scheduledAt) {
+        this.scheduledAt = scheduledAt;
     }
 }

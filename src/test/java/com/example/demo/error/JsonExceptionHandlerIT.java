@@ -85,6 +85,45 @@ class JsonExceptionHandlerIT {
                 .andExpect(jsonPath("$.attributes.layout").value("ABNT2"));
     }
 
+    @Test
+    void validDate_doesNotTriggerHandler() throws Exception {
+        mvc.perform(post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Dated","price":1.00,"stock":0,"releaseDate":"2024-06-15"}
+                                """))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(header().exists("X-Trace-Id"))
+                .andExpect(jsonPath("$.releaseDate").value("2024-06-15"));
+    }
+
+    @Test
+    void validDateTime_doesNotTriggerHandler() throws Exception {
+        mvc.perform(post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Timestamped","price":1.00,"stock":0,"expiresAt":"2024-06-15T10:30:00"}
+                                """))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(header().exists("X-Trace-Id"))
+                .andExpect(jsonPath("$.expiresAt").value("2024-06-15T10:30:00"));
+    }
+
+    @Test
+    void validInstant_doesNotTriggerHandler() throws Exception {
+        mvc.perform(post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Scheduled","price":1.00,"stock":0,"scheduledAt":"2024-06-15T10:30:00Z"}
+                                """))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(header().exists("X-Trace-Id"))
+                .andExpect(jsonPath("$.scheduledAt").value("2024-06-15T10:30:00Z"));
+    }
+
     // --- negative ---
 
     @Test
@@ -383,6 +422,60 @@ class JsonExceptionHandlerIT {
                 .andExpect(header().exists("X-Trace-Id"))
                 .andExpect(jsonPath("$.code").value("MALFORMED_REQUEST_BODY"))
                 .andExpect(jsonPath("$.title").value("Malformed request body"))
+                .andExpect(jsonPath("$.traceId").isString());
+    }
+
+    @Test
+    void invalidDateFormat_returnsBadRequestWithPath() throws Exception {
+        mvc.perform(post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Laptop","price":1.00,"stock":0,"releaseDate":"not-a-date"}
+                                """))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(header().exists("X-Trace-Id"))
+                .andExpect(jsonPath("$.code").value("INVALID_FIELD_VALUE"))
+                .andExpect(jsonPath("$.title").value("Invalid field value"))
+                .andExpect(jsonPath("$.path").value("$.releaseDate"))
+                .andExpect(jsonPath("$.invalidValue").value("not-a-date"))
+                .andExpect(jsonPath("$.expectedType").value("LocalDate"))
+                .andExpect(jsonPath("$.traceId").isString());
+    }
+
+    @Test
+    void invalidDateTimeFormat_returnsBadRequestWithPath() throws Exception {
+        mvc.perform(post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Laptop","price":1.00,"stock":0,"expiresAt":"not-a-datetime"}
+                                """))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(header().exists("X-Trace-Id"))
+                .andExpect(jsonPath("$.code").value("INVALID_FIELD_VALUE"))
+                .andExpect(jsonPath("$.title").value("Invalid field value"))
+                .andExpect(jsonPath("$.path").value("$.expiresAt"))
+                .andExpect(jsonPath("$.invalidValue").value("not-a-datetime"))
+                .andExpect(jsonPath("$.expectedType").value("LocalDateTime"))
+                .andExpect(jsonPath("$.traceId").isString());
+    }
+
+    @Test
+    void invalidInstantFormat_returnsBadRequestWithPath() throws Exception {
+        mvc.perform(post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Laptop","price":1.00,"stock":0,"scheduledAt":"not-an-instant"}
+                                """))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(header().exists("X-Trace-Id"))
+                .andExpect(jsonPath("$.code").value("INVALID_FIELD_VALUE"))
+                .andExpect(jsonPath("$.title").value("Invalid field value"))
+                .andExpect(jsonPath("$.path").value("$.scheduledAt"))
+                .andExpect(jsonPath("$.invalidValue").value("not-an-instant"))
+                .andExpect(jsonPath("$.expectedType").value("Instant"))
                 .andExpect(jsonPath("$.traceId").isString());
     }
 }

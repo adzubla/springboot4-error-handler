@@ -69,10 +69,6 @@ public class DataExceptionHandler {
         var problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, msg("error.duplicate-value.detail"));
         problem.setTitle(msg("error.duplicate-value.title"));
         problem.setProperty("code", ErrorCode.DUPLICATE_VALUE.name());
-        System.out.println("------------------------------------------------------------------------");
-        System.out.println(problem.getStatus() + " " + problem.getTitle());
-        System.out.println(problem.getDetail());
-        System.out.println("------------------------------------------------------------------------");
         return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
     }
 
@@ -103,10 +99,6 @@ public class DataExceptionHandler {
         var problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, msg("error.data-integrity.detail"));
         problem.setTitle(msg("error.data-integrity.title"));
         problem.setProperty("code", ErrorCode.DATA_INTEGRITY_VIOLATION.name());
-        System.out.println("------------------------------------------------------------------------");
-        System.out.println(problem.getStatus() + " " + problem.getTitle());
-        System.out.println(problem.getDetail());
-        System.out.println("------------------------------------------------------------------------");
         return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
     }
 
@@ -125,10 +117,6 @@ public class DataExceptionHandler {
         var problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, msg("error.resource-not-found.detail"));
         problem.setTitle(msg("error.resource-not-found.title"));
         problem.setProperty("code", ErrorCode.RESOURCE_NOT_FOUND.name());
-        System.out.println("------------------------------------------------------------------------");
-        System.out.println(problem.getStatus() + " " + problem.getTitle());
-        System.out.println(problem.getDetail());
-        System.out.println("------------------------------------------------------------------------");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problem);
     }
 }
