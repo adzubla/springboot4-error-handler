@@ -52,6 +52,17 @@ public class JsonExceptionHandler {
 
     private final MessageSource messageSource;
 
+    private static final Map<Class<?>, String> NUMERIC_RANGES = Map.of(
+            byte.class,    "[" + Byte.MIN_VALUE    + ", " + Byte.MAX_VALUE    + "]",
+            Byte.class,    "[" + Byte.MIN_VALUE    + ", " + Byte.MAX_VALUE    + "]",
+            short.class,   "[" + Short.MIN_VALUE   + ", " + Short.MAX_VALUE   + "]",
+            Short.class,   "[" + Short.MIN_VALUE   + ", " + Short.MAX_VALUE   + "]",
+            int.class,     "[" + Integer.MIN_VALUE + ", " + Integer.MAX_VALUE + "]",
+            Integer.class, "[" + Integer.MIN_VALUE + ", " + Integer.MAX_VALUE + "]",
+            long.class,    "[" + Long.MIN_VALUE    + ", " + Long.MAX_VALUE    + "]",
+            Long.class,    "[" + Long.MIN_VALUE    + ", " + Long.MAX_VALUE    + "]"
+    );
+
     public JsonExceptionHandler(MessageSource messageSource) {
         this.messageSource = messageSource;
     }
@@ -140,7 +151,7 @@ public class JsonExceptionHandler {
         var loc = ex.getLocation();
         var targetType = ex.getTargetType();
         var typeName = targetType != null ? targetType.getSimpleName() : "?";
-        var range = extractRange(ex.getOriginalMessage());
+        var range = NUMERIC_RANGES.get(targetType);
         Integer line = loc != null ? loc.getLineNr() : null;
         Integer column = loc != null ? loc.getColumnNr() : null;
         String detail;
@@ -155,16 +166,6 @@ public class JsonExceptionHandler {
         }
         return new JsonProblem(msg("error.integer-overflow.title"), detail,
                 null, null, typeName, null, range, line, column, ErrorCode.INTEGER_OVERFLOW);
-    }
-
-    // Jackson's message: "Numeric value (X) out of range of `type` (MIN - MAX)"
-    // Extracts the last parenthesised segment and normalises it to [MIN, MAX].
-    private static String extractRange(String msg) {
-        if (msg == null) return null;
-        int open = msg.lastIndexOf('(');
-        int close = msg.lastIndexOf(')');
-        if (open < 0 || close <= open) return null;
-        return "[" + msg.substring(open + 1, close).replace(" - ", ", ") + "]";
     }
 
     private JsonProblem unrecognizedProperty(UnrecognizedPropertyException ex) {
