@@ -67,10 +67,6 @@ public class JsonExceptionHandler {
         this.messageSource = messageSource;
     }
 
-    private String msg(String key) {
-        return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
-    }
-
     private String msg(String key, Object... args) {
         return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
     }
