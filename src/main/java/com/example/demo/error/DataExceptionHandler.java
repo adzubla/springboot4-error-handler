@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -62,7 +63,7 @@ public class DataExceptionHandler {
 
     @ExceptionHandler(DuplicateKeyException.class)
     public ResponseEntity<ProblemDetail> handleDuplicateKey(DuplicateKeyException ex) {
-        var rootMessage = ex.getMostSpecificCause().getMessage();
+        var rootMessage = Objects.requireNonNullElse(ex.getMostSpecificCause().getMessage(), "");
         var uniqueMatcher = UNIQUE_CONSTRAINT.matcher(rootMessage);
         var constraint = uniqueMatcher.find() ? uniqueMatcher.group(1) : "unknown";
         log.warn("Duplicate key violation on constraint '{}': {}", constraint, rootMessage);
@@ -75,7 +76,7 @@ public class DataExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ProblemDetail> handleDataIntegrityViolation(
             DataIntegrityViolationException ex) {
-        var rootMessage = ex.getMostSpecificCause().getMessage();
+        var rootMessage = Objects.requireNonNullElse(ex.getMostSpecificCause().getMessage(), "");
 
         var uniqueMatcher = UNIQUE_CONSTRAINT.matcher(rootMessage);
         if (uniqueMatcher.find()) {

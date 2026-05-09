@@ -2,6 +2,7 @@ package com.example.demo.product;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ class ProductService {
         this.repository = repository;
     }
 
+    @Transactional
     ProductResponse create(ProductRequest request) {
         var product = new Product();
         product.setName(request.name());

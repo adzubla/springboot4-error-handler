@@ -176,7 +176,7 @@ public class JsonExceptionHandler {
                 ? msg("error.unknown-field.detail.with-known", ex.getPropertyName(), known)
                 : msg("error.unknown-field.detail", ex.getPropertyName());
         return new JsonProblem(msg("error.unknown-field.title"), detail,
-                "$." + ex.getPropertyName(), null, null, validValues, null, null, null,
+                jsonPath(ex.getPath()), null, null, validValues, null, null, null,
                 ErrorCode.UNKNOWN_JSON_FIELD);
     }
 
