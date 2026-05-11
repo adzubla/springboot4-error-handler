@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -238,6 +239,20 @@ class ValidationExceptionHandlerIT {
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
                 .andExpect(jsonPath("$.violations[?(@.path=='$.price')].invalidValue",
                         hasItem("null")))
+                .andExpect(jsonPath("$.traceId").isString());
+    }
+
+    // --- HandlerMethodValidationException (path variable constraint) ---
+
+    @Test
+    void nonPositivePathVariable_triggersHandlerMethodValidation() throws Exception {
+        mvc.perform(get("/products/{id}", -1))
+                .andDo(print())
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(header().exists("X-Trace-Id"))
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.violations").isArray())
+                .andExpect(jsonPath("$.violations[?(@.path=='$.id')]").exists())
                 .andExpect(jsonPath("$.traceId").isString());
     }
 

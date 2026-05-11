@@ -1,6 +1,7 @@
 package com.example.demo.product;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,7 @@ class ProductController {
     }
 
     @GetMapping("/{id}")
-    ProductResponse findById(@PathVariable Long id) {
+    ProductResponse findById(@PathVariable @Positive Long id) {
         return service.findById(id);
     }
 }
